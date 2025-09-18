@@ -1,15 +1,9 @@
 import express from "express";
 import cors from "cors";
-import { time } from "console";
 
 const app = express();
-app.use(cors());           // <── allow all origins for development
+app.use(cors());
 app.use(express.json());
-
-// your existing routes
-app.get("/ping", (req, res) => {
-  res.json({ status: "ok" });
-});
 
 // telemetry storage
 let telemetry = [
@@ -23,43 +17,45 @@ const generateID = () => `t${telemetry.length + 1}`;
 // helper func to generate random telemetry
 const generateRandomTelemetry = () => {
   const altitude = Math.floor(Math.random() * 30000);
-  const success = Math.random() > .2;
-  const newRecond = {
+  const success = Math.random() > 0.2;
+  const newRecord = {
     id: generateID(),
     timestamp: Date.now(),
     altitude,
     success,
   };
-  telemetry.push(newRecond);
+  telemetry.push(newRecord);
 };
 
 setInterval(generateRandomTelemetry, 5000);
 
 // GET /ping
 app.get("/ping", (req, res) => {
-  res.json({status: "ok"})
+  res.json({ status: "ok" });
 });
 
-//GET telemetry with opt minAlt filter!
+// GET /telemetry with optional minAlt / maxAlt query
 app.get("/telemetry", (req, res) => {
+  let data = telemetry;
   const minAlt = parseFloat(req.query.minAlt);
-  if (!isNaN(minAlt)){
-    return res.json(telemetry.filter(record => record.altitude > minAlt));
-  }
-  res.json(telemetry);
+  const maxAlt = parseFloat(req.query.maxAlt);
+
+  if (!isNaN(minAlt)) data = data.filter(t => t.altitude > minAlt);
+  if (!isNaN(maxAlt)) data = data.filter(t => t.altitude <= maxAlt);
+
+  res.json(data);
 });
 
-// POST /telemetry with err handling 
+// POST /telemetry
 app.post("/telemetry", (req, res) => {
-  const { id, timestamp, altitude, success = true } = req.body;
-
-  if (!altitude) return res.status(400).json({ error: "Altitude required" });
+  const { altitude, success = true } = req.body;
+  if (altitude == null) return res.status(400).json({ error: "Altitude required" });
 
   const newRecord = {
-    id:generateID(),
+    id: generateID(),
     timestamp: Date.now(),
     altitude,
-    success,
+    success
   };
 
   telemetry.push(newRecord);
