@@ -1,0 +1,60 @@
+/* App.css */
+
+/* Container for the whole dashboard */
+.App {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+/* Flex container for the tables */
+.tables-container {
+  display: flex;
+  gap: 2rem;        /* spacing between tables */
+  flex-wrap: wrap;  /* wrap on smaller screens */
+  justify-content: center;
+}
+
+/* Each table wrapper */
+.table-wrapper {
+  flex: 1 1 400px;  /* flexible width with minimum 400px */
+  text-align: left;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+th {
+  background-color: #f0f0f0;
+}
+
+/* Inputs and buttons inside tables */
+input, button {
+  padding: 0.4rem 0.6rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #e0e0e0;
+}
