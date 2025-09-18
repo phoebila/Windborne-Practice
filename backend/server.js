@@ -27,7 +27,7 @@ const generateRandomTelemetry = () => {
   telemetry.push(newRecord);
 };
 
-setInterval(generateRandomTelemetry, 5000);
+setInterval(generateRandomTelemetry, 60000);
 
 // GET /ping
 app.get("/ping", (req, res) => {
