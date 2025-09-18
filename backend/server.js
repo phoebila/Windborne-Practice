@@ -34,14 +34,26 @@ app.get("/ping", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// GET /telemetry with optional minAlt / maxAlt query
+// GET /telemetry with optional minAlt, maxAlt, success, sort, order
 app.get("/telemetry", (req, res) => {
   let data = telemetry;
   const minAlt = parseFloat(req.query.minAlt);
   const maxAlt = parseFloat(req.query.maxAlt);
+  const success = req.query.success; // "true" or "false"
+  const sort = req.query.sort; // "altitude" or "timestamp"
+  const order = req.query.order; // "asc" or "desc"
 
   if (!isNaN(minAlt)) data = data.filter(t => t.altitude > minAlt);
   if (!isNaN(maxAlt)) data = data.filter(t => t.altitude <= maxAlt);
+  if (success === "true") data = data.filter(t => t.success);
+  if (success === "false") data = data.filter(t => !t.success);
+
+  if (sort) {
+    data.sort((a, b) => {
+      if (order === "desc") return b[sort] - a[sort];
+      return a[sort] - b[sort];
+    });
+  }
 
   res.json(data);
 });
@@ -60,6 +72,30 @@ app.post("/telemetry", (req, res) => {
 
   telemetry.push(newRecord);
   res.status(201).json(newRecord);
+});
+
+// DELETE /telemetry/:id
+app.delete("/telemetry/:id", (req, res) => {
+  const { id } = req.params;
+  const index = telemetry.findIndex(t => t.id === id);
+  if (index === -1) return res.status(404).json({ error: "Record not found" });
+
+  const deleted = telemetry.splice(index, 1)[0];
+  res.json(deleted);
+});
+
+// PUT /telemetry/:id
+app.put("/telemetry/:id", (req, res) => {
+  const { id } = req.params;
+  const { altitude, success } = req.body;
+
+  const record = telemetry.find(t => t.id === id);
+  if (!record) return res.status(404).json({ error: "Record not found" });
+
+  if (altitude != null) record.altitude = altitude;
+  if (success != null) record.success = success;
+
+  res.json(record);
 });
 
 app.listen(4000, () => console.log("Server running on http://localhost:4000"));
