@@ -8,6 +8,11 @@ export default function TelemetryTable({ minAltFilter }) {
   const [newAltitude, setNewAltitude] = useState("");
   const [newTimestamp, setNewTimestamp] = useState("");
 
+  // edit state
+  const [editingId, setEditingId] = useState(null);
+  const [editAltitude, setEditAltitude] = useState("");
+
+  // Fetch telemetry from backend
   const fetchTelemetry = async () => {
     try {
       let url = "http://localhost:4000/telemetry";
@@ -31,6 +36,7 @@ export default function TelemetryTable({ minAltFilter }) {
     return () => clearInterval(interval);
   }, [minAltFilter]);
 
+  // Handle new telemetry POST
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newAltitude) return alert("Altitude required");
@@ -55,18 +61,53 @@ export default function TelemetryTable({ minAltFilter }) {
     }
   };
 
+  // Delete a telemetry record
+  const handleDelete = async (id) => {
+    try {
+      await fetch(`http://localhost:4000/telemetry/${id}`, { method: "DELETE" });
+      setTelemetry((prev) => prev.filter((t) => t.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Start editing a row
+  const startEdit = (id, altitude) => {
+    setEditingId(id);
+    setEditAltitude(altitude);
+  };
+
+  // Save edited row
+  const saveEdit = async (id) => {
+    try {
+      await fetch(`http://localhost:4000/telemetry/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ altitude: Number(editAltitude) }),
+      });
+      setTelemetry((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, altitude: Number(editAltitude) } : t))
+      );
+      setEditingId(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const filteredTelemetry = telemetry.filter((t) =>
     showSuccessful ? t.success : true
   );
 
   return (
     <div>
+      {/* Toggle show only successful */}
       <div style={{ marginBottom: "10px" }}>
         <button onClick={() => setShowSuccessful((s) => !s)}>
           {showSuccessful ? "Show All" : "Show Only Successful"}
         </button>
       </div>
 
+      {/* Form to add new telemetry */}
       <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
         <input
           type="number"
@@ -85,6 +126,7 @@ export default function TelemetryTable({ minAltFilter }) {
         <button type="submit">Add Telemetry</button>
       </form>
 
+      {/* Telemetry Table */}
       <table border="1" cellPadding="5">
         <thead>
           <tr>
@@ -92,6 +134,7 @@ export default function TelemetryTable({ minAltFilter }) {
             <th>Timestamp</th>
             <th>Altitude</th>
             <th>Success</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -99,8 +142,28 @@ export default function TelemetryTable({ minAltFilter }) {
             <tr key={t.id}>
               <td>{t.id}</td>
               <td>{new Date(t.timestamp).toLocaleString()}</td>
-              <td>{t.altitude}</td>
+              <td>
+                {editingId === t.id ? (
+                  <>
+                    <input
+                      type="number"
+                      value={editAltitude}
+                      onChange={(e) => setEditAltitude(e.target.value)}
+                    />
+                    <button onClick={() => saveEdit(t.id)}>Save</button>
+                    <button onClick={() => setEditingId(null)}>Cancel</button>
+                  </>
+                ) : (
+                  <>
+                    {t.altitude}{" "}
+                    <button onClick={() => startEdit(t.id, t.altitude)}>Edit</button>
+                  </>
+                )}
+              </td>
               <td>{t.success ? "✅" : "❌"}</td>
+              <td>
+                <button onClick={() => handleDelete(t.id)}>Delete</button>
+              </td>
             </tr>
           ))}
         </tbody>
