@@ -3,7 +3,8 @@
 export interface Telemetry{
   id: string,
   timestamp: number,
-  altitude: number;
+  altitude: number,
+  success: boolean;
 }
 
 /**

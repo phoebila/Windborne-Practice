@@ -1,17 +1,29 @@
 import express from "express";
-import bodyParser from "body-parser";
-import telemetryRouter from "./routes/telemetry.js";
+import cors from "cors";
 
 const app = express();
-const PORT = 4000;
+app.use(cors());           // <── allow all origins for development
+app.use(express.json());
 
-app.use(bodyParser.json());
-app.use("/telemetry", telemetryRouter);
-
+// your existing routes
 app.get("/ping", (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+let telemetry = [
+  { id: "a1", timestamp: Date.now(), altitude: 12000, success: true },
+  { id: "a2", timestamp: Date.now(), altitude: 18000, success: false }
+];
+
+app.get("/telemetry", (req, res) => {
+  res.json(telemetry);
 });
+
+app.post("/telemetry", (req, res) => {
+  const { id, timestamp, altitude } = req.body;
+  if (!altitude) return res.status(400).json({ error: "Altitude required" });
+  telemetry.push({ id, timestamp, altitude });
+  res.json({ status: "added" });
+});
+
+app.listen(4000, () => console.log("Server running on http://localhost:4000"));
