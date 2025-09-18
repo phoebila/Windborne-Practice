@@ -1,5 +1,6 @@
 {
   "type": "module",
+  "homepage": "https://proyer.github.io/Windborne-Practice",
   "devDependencies": {
     "@types/node": "^24.5.0",
     "ts-node": "^10.9.2",
@@ -12,5 +13,11 @@
     "pg": "^8.16.3",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
-  }
+  },
+  "scripts": {
+  "start": "react-scripts start",
+  "build": "react-scripts build",
+  "predeploy": "npm run build",
+  "deploy": "gh-pages -d build"
+}
 }
